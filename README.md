@@ -36,6 +36,7 @@ Refer to [changelogs](https://github.com/Luminous418/LumiROM/blob/OneUI8.5/chang
 
 | Device | Model |
 | :--- | :--- |
+| Samsung Galaxy A12s | SM-A127F |
 | Samsung Galaxy A22 | SM-A225F |
 | Samsung Galaxy A22 5G | SM-A226B |
 | Samsung Galaxy A32 | SM-A325F |
