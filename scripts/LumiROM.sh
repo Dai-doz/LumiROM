@@ -143,46 +143,6 @@ DEBLOAT_VENDOR() {
     echo "${GREEN}Vendor debloat completed${RESET}"
 }
 
-PATCH_FSTAB_EROFS() {
-    local EXTRACTED_FIRM_DIR="$1"
-    
-    if [ -z "SM-A127F" ]; then
-        echo "Skip fstab patches"
-    fi
-
-    echo "${YELLOW}Applying patches EROFS to fstab...${RESET}"
-
-    local vendor_etc_dir="$EXTRACTED_FIRM_DIR/vendor/etc"
-    local fstab_files=()
-    mapfile -t fstab_files < <(find "$vendor_etc_dir" -maxdepth 1 -type f -name "fstab.mt*")
-
-    if [ ${#fstab_files[@]} -eq 0 ]; then
-        echo "${RED}No fstab files found in${RESET} $vendor_etc_dir"
-        return 1
-    fi
-
-    local partitions="system system_ext vendor product odm"
-
-    for target in "${fstab_files[@]}"; do
-        local fstab_name=$(basename "$target")
-        echo "${CYAN}Processing:${RESET} /vendor/etc/$fstab_name"
-        
-        for part in $partitions; do
-            if sudo grep -E -q "^$part[[:space:]]+.*erofs" "$target"; then
-                echo "${YELLOW}Skipped:${RESET} Partition $part already contains 'erofs'."
-                continue
-            fi
-
-            if sudo grep -E -q "^$part[[:space:]]+.*ext4" "$target"; then
-                echo "${GREEN}Patching:${RESET} $part (ext4 -> erofs)"
-                sudo sed -i -E "/^$part[[:space:]]+.*ext4/ { p; s/ext4/erofs/2; t; s/ext4/erofs/ }" "$target"
-            fi
-        done
-    done
-
-    echo "${GREEN}Done, now${RESET} $STOCK_DEVICE ${GREEN}is EROFS-enabled.${RESET}"
-}
-
 INSTALL_FRAMEWORK() {
     if [ "$#" -ne 1 ]; then
         echo "Usage: ${FUNCNAME[0]} <framework-res.apk>"
