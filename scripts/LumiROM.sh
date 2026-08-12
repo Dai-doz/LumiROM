@@ -146,9 +146,8 @@ DEBLOAT_VENDOR() {
 PATCH_FSTAB_EROFS() {
     local EXTRACTED_FIRM_DIR="$1"
     
-    if [ -z "$EXTRACTED_FIRM_DIR" ]; then
-        echo "Error: FIRM directory not specified."
-        return 1
+    if [ -z "SM-A127F" ]; then
+        echo "Skip fstab patches"
     fi
 
     echo "${YELLOW}Applying patches EROFS to fstab...${RESET}"
