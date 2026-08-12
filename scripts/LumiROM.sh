@@ -143,6 +143,10 @@ DEBLOAT_VENDOR() {
     echo "${GREEN}Vendor debloat completed${RESET}"
 }
 
+PATCH_FSTAB_EROFS() {
+    echo "A12s vendor is patched , so skip"
+}
+
 INSTALL_FRAMEWORK() {
     if [ "$#" -ne 1 ]; then
         echo "Usage: ${FUNCNAME[0]} <framework-res.apk>"
