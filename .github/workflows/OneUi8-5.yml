@@ -144,6 +144,15 @@ jobs:
         source scripts/FW.sh
         PREPARE_PARTITIONS "$IMGS_DIR"
         EXTRACT_FIRMWARE_IMG "$IMGS_DIR" "$FIRM_DIR"
+        
+    - name: Apply vendor patches
+      shell: bash
+      run: |
+        source scripts/LumiROM.sh
+        DISABLE_FBE "$FIRM_DIR"
+        DISABLE_FDE "$FIRM_DIR"
+        DELETE_ICCC "$FIRM_DIR"
+        DEBLOAT_VENDOR "$FIRM_DIR"
 
     - name: Apply stock config
       shell: bash
