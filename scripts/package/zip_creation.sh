@@ -64,8 +64,13 @@ FLASHABLE_ZIP_CREATION() {
         MAKEROM_DIR="$(pwd)/makerom"
         export FOLDER_NAME
 
+        # Persist FOLDER_NAME so the caller can find the output after this
+        # function returns: $GITHUB_ENV in the workflows, or $LUMIROM_ENV_FILE
+        # in local builds (where run() executes this in a subshell).
         if [ -n "$GITHUB_ENV" ]; then
             echo "FOLDER_NAME=$FOLDER_NAME" >> "$GITHUB_ENV"
+        elif [ -n "$LUMIROM_ENV_FILE" ]; then
+            echo "FOLDER_NAME=$FOLDER_NAME" >> "$LUMIROM_ENV_FILE"
         fi
 
         if [[ "$DEVICE" == "SM-A325F" ]]; then
@@ -202,6 +207,8 @@ IMG_ZIP_CREATION() {
 
     if [ -n "$GITHUB_ENV" ]; then
         echo "FOLDER_NAME=$FOLDER_NAME" >> "$GITHUB_ENV"
+    elif [ -n "$LUMIROM_ENV_FILE" ]; then
+        echo "FOLDER_NAME=$FOLDER_NAME" >> "$LUMIROM_ENV_FILE"
     fi
 
     if [[ "$DEVICE" == "SM-A325F" ]]; then

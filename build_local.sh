@@ -147,6 +147,12 @@ setup_environment() {
     export BUILD_PARTITIONS="product,vendor,odm,system_ext,system"
     export SKIP_TARGET_FILES
 
+    # Mirror the workflows' $GITHUB_ENV: a file where functions invoked through
+    # run() (which pipes them into a subshell) can persist globals such as
+    # FOLDER_NAME so the caller still sees them after they return.
+    LUMIROM_ENV_FILE="$(mktemp)"
+    export LUMIROM_ENV_FILE
+
     # Android build-tools (zipalign/apksigner) needed by REBUILD_AND_SIGN_APK.
     # Ubuntu ships them under /usr/lib/android-sdk/build-tools/debian/ (not in PATH).
     if [ -d "$HOME/Android/Sdk/build-tools" ]; then
@@ -406,6 +412,15 @@ package_output() {
         INJECT_CAMERA_CLEANUP_FILE "$(pwd)/makerom/META-INF/com/google/android/updater-script"
         run FLASHABLE_ZIP_CREATION
 
+        # run() pipes the function into a subshell, so the FOLDER_NAME it
+        # exports is lost when it returns. Reload it from $LUMIROM_ENV_FILE
+        # (the local equivalent of the workflows' $GITHUB_ENV); without it the
+        # path below falls back to "find ./ROM/" and signs a stale zip.
+        if [ -s "$LUMIROM_ENV_FILE" ]; then
+            . "$LUMIROM_ENV_FILE"
+            export FOLDER_NAME
+        fi
+
         log_section "Signing OTA package"
         source scripts/package/sign_ota.sh
         OTA_ZIP=$(find ./ROM/"$FOLDER_NAME" -type f -name "*.zip" ! -name "*INCREMENTAL*" 2>/dev/null | head -n 1)
@@ -446,6 +461,7 @@ package_output() {
 cleanup() {
     log_message "Cleaning up temporary directories..."
     run sudo rm -rf ./OUT/ ./TMP/ ./WORK/ ./FIRMWARE/ ./makerom/
+    [ -n "$LUMIROM_ENV_FILE" ] && rm -f "$LUMIROM_ENV_FILE"
 
     log_message "✓ LumiROM $LUMIROM_VERSION for $STOCK_DEVICE is ready!"
     log_message "✓ You can find it in the ROM folder"
