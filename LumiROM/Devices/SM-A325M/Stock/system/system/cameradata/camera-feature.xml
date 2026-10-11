@@ -14,7 +14,7 @@
     <local name="SHOOTING_MODE_SLOW_MOTION" back="SLOW_MOTION" enable="true" more="true" order="12" preview-size="1280x720" capture-size="1280x720"/>
     <local name="SHOOTING_MODE_HYPER_LAPSE" back="HYPER_LAPSE" front="HYPER_LAPSE" enable="true" more="true" order="13" preview-size="1920x1080" capture-size="1920x1080"/>
     <local name="SHOOTING_MODE_SINGLE_TAKE_VIDEO" back="SINGLE_TAKE_VIDEO" front="SINGLE_TAKE_VIDEO" enable="false" more="true" order="14" preview-size="1440x1080" capture-size="3264x2448" front-capture-size="2944x2208"/>
-	<local name="SHOOTING_MODE_QR" back="QR" enable="true" more="false" order="100" preview-size="2336x1080"/>
+	<local name="SHOOTING_MODE_QR" back="QR" enable="true" more="false" order="100" preview-size="1600x720"/>
 
 
     <!-- Capture resolution - BACK -->
