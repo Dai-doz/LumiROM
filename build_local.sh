@@ -184,8 +184,7 @@ setup_permissions() {
 install_packages() {
     log_section "Installing required packages"
     source scripts/utils/install_packages.sh
-    run UBUNTU_PACKAGES
-    run PYTHON_PACKAGES
+    run INSTALL_PACKAGES
 }
 
 setup_directories() {

@@ -94,8 +94,7 @@ jobs:
     - name: Install required packages
       run: |
         source scripts/utils/install_packages.sh
-        UBUNTU_PACKAGES
-        PYTHON_PACKAGES
+        INSTALL_PACKAGES
 
     - name: Setup directories
       run: |

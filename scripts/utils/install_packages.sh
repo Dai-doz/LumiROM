@@ -2,6 +2,42 @@
 
 source scripts/utils/bash_colors.sh
 
+# ---------------------------------------------------------------------------
+# System detection
+# ---------------------------------------------------------------------------
+# Detects whether we are running on a Debian/Ubuntu or an Arch based system.
+# Any other distribution aborts the script with an error.
+detect_os() {
+    if [ -r /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        . /etc/os-release
+    fi
+
+    local MATCH=" $(printf '%s %s' "${ID:-}" "${ID_LIKE:-}") "
+    MATCH="$(printf '%s' "$MATCH" | tr '[:upper:]' '[:lower:]')"
+
+    case "$MATCH" in
+        *" arch "*|*" archlinux "*)
+            OS_TYPE="arch"
+            ;;
+        *" ubuntu "*|*" debian "*)
+            OS_TYPE="debian"
+            ;;
+        *)
+            echo -e "${BOLD_RED}[✗] Unsupported system: ${PRETTY_NAME:-unknown distribution}${RESET}" >&2
+            echo -e "${BOLD_RED}    This script only supports Debian/Ubuntu and Arch Linux based systems.${RESET}" >&2
+            exit 1
+            ;;
+    esac
+
+    echo -e "${GREEN}[✓] Detected ${OS_TYPE} based system (${PRETTY_NAME:-${ID:-unknown}}).${RESET}"
+}
+
+detect_os
+
+# ---------------------------------------------------------------------------
+# Debian / Ubuntu
+# ---------------------------------------------------------------------------
 UBUNTU_PACKAGES() {
     PACKAGES=(
         file
@@ -69,6 +105,88 @@ UBUNTU_PACKAGES() {
     echo -e "\n¡All dependencies checked and updated!"
 }
 
+# ---------------------------------------------------------------------------
+# Arch Linux
+# ---------------------------------------------------------------------------
+ARCH_PACKAGES() {
+    # Packages available in the official repositories.
+    REPO_PACKAGES=(
+        file
+        7zip
+        brotli
+        patch
+        e2fsprogs
+        zstd
+        aria2
+        unzip
+        tar
+        lz4
+        tree
+        git
+        gnupg
+        flex
+        bison
+        zip
+        curl
+        jq
+        fontconfig
+        python
+        python-pip
+        jdk17-openjdk
+        base-devel
+        zlib
+        ncurses
+        openssl
+        libelf
+        libxml2
+        libxslt
+        python-protobuf
+        protobuf
+        android-tools
+        tinyxxd
+    )
+
+    # Packages that only exist in the AUR.
+    AUR_PACKAGES=(
+        bsdiff
+        android-sdk-build-tools
+        android-signapk
+        secilc
+    )
+
+    local AUR_HELPER=""
+    if command -v paru >/dev/null 2>&1; then
+        AUR_HELPER="paru"
+    elif command -v yay >/dev/null 2>&1; then
+        AUR_HELPER="yay"
+    fi
+
+    echo -e "\nChecking dependency status...\n"
+
+    if ! sudo pacman -S --needed --noconfirm "${REPO_PACKAGES[@]}"; then
+        echo "${BOLD_YELLOW}[↑] Syncing package databases and retrying...${RESET}"
+        sudo pacman -Sy --noconfirm
+        sudo pacman -S --needed --noconfirm "${REPO_PACKAGES[@]}"
+    fi
+
+    echo "${GREEN}[✓] Official repository packages are installed.${RESET}"
+
+    if [ -n "$AUR_HELPER" ]; then
+        echo "${YELLOW}[+] Installing AUR packages with $AUR_HELPER...${RESET}"
+        "$AUR_HELPER" -S --needed --noconfirm "${AUR_PACKAGES[@]}"
+        echo "${GREEN}[✓] AUR packages are installed.${RESET}"
+    else
+        echo -e "${BOLD_YELLOW}[!] No AUR helper (paru/yay) found. Skipping AUR packages:${RESET}"
+        echo -e "${BOLD_YELLOW}    ${AUR_PACKAGES[*]}${RESET}"
+        echo -e "${BOLD_YELLOW}    Install paru or yay and re-run to install them.${RESET}"
+    fi
+
+    echo -e "\n¡All dependencies checked and updated!"
+}
+
+# ---------------------------------------------------------------------------
+# Python (pip) dependencies
+# ---------------------------------------------------------------------------
 PYTHON_PACKAGES() {
     PIP_PACKAGES=(
         liblp
@@ -80,6 +198,14 @@ PYTHON_PACKAGES() {
 
     SAMLOADER_URL="git+https://github.com/ananjaser1211/samloader.git"
 
+    # On Debian/Ubuntu PEP 668 requires --break-system-packages; on Arch pip
+    # writes to the system directory and therefore needs sudo instead.
+    if [ "$OS_TYPE" = "arch" ]; then
+        PIP_CMD=(sudo python3 -m pip install)
+    else
+        PIP_CMD=(python3 -m pip install --break-system-packages)
+    fi
+
     echo -e "Checking Python dependencies (pip3)...\n"
 
     for pkg in "${PIP_PACKAGES[@]}"; do
@@ -87,7 +213,7 @@ PYTHON_PACKAGES() {
             echo "${GREEN}[✓] $pkg (pip) is already installed.${RESET}"
         else
             echo "${YELLOW}[+] Installing $pkg with pip3...${RESET}"
-            python3 -m pip install "$pkg" --break-system-packages
+            "${PIP_CMD[@]}" "$pkg"
         fi
     done
 
@@ -95,14 +221,32 @@ PYTHON_PACKAGES() {
         echo "${GREEN}[✓] samloader (Git) is already installed.${RESET}"
     else
         echo "${YELLOW}[+] Installing samloader from GitHub...${RESET}"
-        python3 -m pip install "$SAMLOADER_URL" --break-system-packages
+        "${PIP_CMD[@]}" "$SAMLOADER_URL"
     fi
 
     echo -e "\nPython environment verified successfully!"
 }
 
+# ---------------------------------------------------------------------------
+# Dispatchers
+# ---------------------------------------------------------------------------
+INSTALL_PACKAGES() {
+    case "$OS_TYPE" in
+        debian) UBUNTU_PACKAGES ;;
+        arch)   ARCH_PACKAGES ;;
+    esac
+    PYTHON_PACKAGES
+    CLEANUP
+}
+
 # Cleanup.
-sudo apt clean
-rm -rf ~/.cache/*
-sudo apt autoclean
-sudo apt autoremove -y
+CLEANUP() {
+    if [ "$OS_TYPE" = "arch" ]; then
+        sudo pacman -Sc --noconfirm
+    else
+        sudo apt clean
+        sudo apt autoclean
+        sudo apt autoremove -y
+    fi
+    rm -rf ~/.cache/*
+}
