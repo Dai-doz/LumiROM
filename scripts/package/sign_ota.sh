@@ -20,9 +20,22 @@ SIGN_OTA_ZIP() {
         return 1
     fi
 
-    local SIGNER="/usr/share/signapk/signapk.jar"
-    if [ ! -f "$SIGNER" ]; then
-        echo "${RED}signapk not found at $SIGNER. Install it first.${RESET}"
+    # signapk is bundled in the repo (self-contained jar, works on Debian/Ubuntu
+    # and Arch with any Java >= 9). Fall back to system locations if missing.
+    # Override with $SIGNAPK_JAR if needed.
+    local SIGNER=""
+    local CANDIDATE
+    for CANDIDATE in "${SIGNAPK_JAR:-}" \
+            "$PWD/bin/apktool/signapk.jar" \
+            "/usr/share/signapk/signapk.jar" \
+            "/usr/share/java/signapk/signapk.jar"; do
+        if [ -n "$CANDIDATE" ] && [ -f "$CANDIDATE" ]; then
+            SIGNER="$CANDIDATE"
+            break
+        fi
+    done
+    if [ -z "$SIGNER" ]; then
+        echo "${RED}signapk not found (looked for bin/apktool/signapk.jar and /usr/share/signapk/signapk.jar).${RESET}"
         return 1
     fi
 

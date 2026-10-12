@@ -44,7 +44,6 @@ UBUNTU_PACKAGES() {
         xxd
         android-sdk-build-tools
         patch
-        signapk
         e2fsprogs
         zstd
         aria2
@@ -136,7 +135,6 @@ ARCH_PACKAGES() {
     AUR_PACKAGES=(
         bsdiff
         android-sdk-build-tools
-        android-signapk
         secilc
     )
 

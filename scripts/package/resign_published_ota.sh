@@ -9,7 +9,7 @@
 #
 # Requirements:
 #   - The OTA private key: $OTA_PK8/$OTA_CERT or ~/.lumi/keys/ota.{pk8,x509.pem}
-#   - signapk installed (/usr/share/signapk/signapk.jar)
+#   - signapk: bundled at bin/apktool/signapk.jar, or system /usr/share/signapk/signapk.jar
 #   - For uploads: $HF_TOKEN and $HF_USER (owner of the buckets)
 #
 # Usage:
