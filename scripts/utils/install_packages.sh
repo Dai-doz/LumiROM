@@ -223,12 +223,14 @@ INSTALL_PACKAGES() {
 }
 
 CLEANUP() {
+    # Arch: no cache cleanup. It is not needed for the build and the previous
+    # 'pacman -Sc' only added noise (and errors) to the build log.
     if [ "$OS_TYPE" = "arch" ]; then
-        sudo pacman -Sc --noconfirm
-    else
-        sudo apt clean
-        sudo apt autoclean
-        sudo apt autoremove -y
+        return 0
     fi
+
+    sudo apt clean
+    sudo apt autoclean
+    sudo apt autoremove -y
     rm -rf ~/.cache/*
 }
