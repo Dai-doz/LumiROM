@@ -122,7 +122,6 @@ ARCH_PACKAGES() {
         python-pip
         jdk17-openjdk
         base-devel
-        zlib
         ncurses
         openssl
         libelf
@@ -157,7 +156,15 @@ ARCH_PACKAGES() {
     if ! sudo pacman -S --needed --noconfirm "${REPO_PACKAGES[@]}"; then
         echo "${BOLD_YELLOW}[↑] Syncing package databases and retrying...${RESET}"
         sudo pacman -Sy --noconfirm
-        sudo pacman -S --needed --noconfirm "${REPO_PACKAGES[@]}"
+        if ! sudo pacman -S --needed --noconfirm "${REPO_PACKAGES[@]}"; then
+            # A single conflicting package aborts the whole transaction, so
+            # fall back to installing one by one and skip whatever conflicts.
+            echo "${BOLD_YELLOW}[!] Batch install failed; installing individually, skipping conflicts...${RESET}"
+            for pkg in "${REPO_PACKAGES[@]}"; do
+                sudo pacman -S --needed --noconfirm "$pkg" || \
+                    echo "${BOLD_YELLOW}[!] Skipping $pkg (conflict or unavailable)${RESET}"
+            done
+        fi
     fi
 
     echo "${GREEN}[✓] Official repository packages are installed.${RESET}"
