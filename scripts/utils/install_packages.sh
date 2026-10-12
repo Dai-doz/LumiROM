@@ -2,14 +2,8 @@
 
 source scripts/utils/bash_colors.sh
 
-# ---------------------------------------------------------------------------
-# System detection
-# ---------------------------------------------------------------------------
-# Detects whether we are running on a Debian/Ubuntu or an Arch based system.
-# Any other distribution aborts the script with an error.
 detect_os() {
     if [ -r /etc/os-release ]; then
-        # shellcheck disable=SC1091
         . /etc/os-release
     fi
 
@@ -35,9 +29,6 @@ detect_os() {
 
 detect_os
 
-# ---------------------------------------------------------------------------
-# Debian / Ubuntu
-# ---------------------------------------------------------------------------
 UBUNTU_PACKAGES() {
     PACKAGES=(
         file
@@ -105,11 +96,7 @@ UBUNTU_PACKAGES() {
     echo -e "\n¡All dependencies checked and updated!"
 }
 
-# ---------------------------------------------------------------------------
-# Arch Linux
-# ---------------------------------------------------------------------------
 ARCH_PACKAGES() {
-    # Packages available in the official repositories.
     REPO_PACKAGES=(
         file
         7zip
@@ -146,7 +133,6 @@ ARCH_PACKAGES() {
         tinyxxd
     )
 
-    # Packages that only exist in the AUR.
     AUR_PACKAGES=(
         bsdiff
         android-sdk-build-tools
@@ -184,9 +170,6 @@ ARCH_PACKAGES() {
     echo -e "\n¡All dependencies checked and updated!"
 }
 
-# ---------------------------------------------------------------------------
-# Python (pip) dependencies
-# ---------------------------------------------------------------------------
 PYTHON_PACKAGES() {
     PIP_PACKAGES=(
         liblp
@@ -198,8 +181,6 @@ PYTHON_PACKAGES() {
 
     SAMLOADER_URL="git+https://github.com/ananjaser1211/samloader.git"
 
-    # On Debian/Ubuntu PEP 668 requires --break-system-packages; on Arch pip
-    # writes to the system directory and therefore needs sudo instead.
     if [ "$OS_TYPE" = "arch" ]; then
         PIP_CMD=(sudo python3 -m pip install)
     else
@@ -227,9 +208,6 @@ PYTHON_PACKAGES() {
     echo -e "\nPython environment verified successfully!"
 }
 
-# ---------------------------------------------------------------------------
-# Dispatchers
-# ---------------------------------------------------------------------------
 INSTALL_PACKAGES() {
     case "$OS_TYPE" in
         debian) UBUNTU_PACKAGES ;;
@@ -239,7 +217,6 @@ INSTALL_PACKAGES() {
     CLEANUP
 }
 
-# Cleanup.
 CLEANUP() {
     if [ "$OS_TYPE" = "arch" ]; then
         sudo pacman -Sc --noconfirm
