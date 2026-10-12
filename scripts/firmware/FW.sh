@@ -150,7 +150,9 @@ DOWNLOAD_FIRMWARE() {
         echo "Firmware Size: ${file_size} MB"
 
         mv "${DOWN_DIR}"/${MODEL}_*_fac.zip "IMGs/${MODEL}.zip"
-        rm -rf "${DOWN_DIR}/${MODEL}"
+        # Remove the whole download dir (it used to be left behind as
+        # $FIRM_DIR/$MODEL, which later got treated as a phantom partition).
+        rm -rf "$DOWN_DIR"
 }
 
 DOWNLOAD_FIRMWARE_LUMI() {

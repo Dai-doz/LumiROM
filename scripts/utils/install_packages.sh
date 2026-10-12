@@ -40,6 +40,7 @@ UBUNTU_PACKAGES() {
         default-jre
         openjdk-17-jdk
         brotli
+        bc
         bsdiff
         xxd
         android-sdk-build-tools
@@ -100,6 +101,7 @@ ARCH_PACKAGES() {
         file
         7zip
         brotli
+        bc
         patch
         e2fsprogs
         zstd
@@ -129,8 +131,13 @@ ARCH_PACKAGES() {
         python-protobuf
         protobuf
         android-tools
-        tinyxxd
     )
+
+    # xxd is provided by vim, which conflicts with the tinyxxd/xxd packages.
+    # Only pull a provider when the command is actually missing.
+    if ! command -v xxd >/dev/null 2>&1; then
+        REPO_PACKAGES+=(tinyxxd)
+    fi
 
     AUR_PACKAGES=(
         bsdiff
