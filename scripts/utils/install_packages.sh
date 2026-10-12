@@ -180,7 +180,7 @@ PYTHON_PACKAGES() {
     SAMLOADER_URL="git+https://github.com/ananjaser1211/samloader.git"
 
     if [ "$OS_TYPE" = "arch" ]; then
-        PIP_CMD=(sudo python3 -m pip install)
+        PIP_CMD=(sudo python3 -m pip install --break-system-packages)
     else
         PIP_CMD=(python3 -m pip install --break-system-packages)
     fi
