@@ -249,7 +249,7 @@ DOWNLOAD_VENDOR() {
     local DOWN_DIR="${1}"
 
     echo "${YELLOW}Downloading vendor for${RESET} ${STOCK_DEVICE}"
-    aria2c -x 16 -k 1M -d "$DOWN_DIR" -o "vendor.img" --allow-overwrite=true --auto-file-renaming=false --console-log-level=error "https://github.com/LumiROM/VendorsForMTKG80/releases/download/${STOCK_DEVICE}_latest/vendor.img" || return 1
+    aria2c -x 16 -k 1M -d "$DOWN_DIR" -o "vendor.img" --allow-overwrite=true --auto-file-renaming=false --console-log-level=error "https://github.com/Dai-doz/android_vendor_a12snsxx/releases/download/upstream-r49p1/vendor.img" || return 1
     
     # Cleanup any leftover .aria2 control files
     wait
